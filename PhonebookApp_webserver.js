@@ -13,181 +13,92 @@ const rl = readline.createInterface({
 });
 
 var readContacts = function (callback) {
-    fs.readFile(pbFileName, (err, data)=> {
-        var json =  JSON.parse(data);
+    fs.readFile(pbFileName, (err, data) => {
+        var json = JSON.parse(data);
         callback(json);
     })
 }
 
-var writeContacts = function (content) { 
+var writeContacts = function (content) {
     readContacts(
         function (data) {
             data.push(content)
             fs.writeFile(pbFileName, JSON.stringify(data), function (err) {
-            if (err) throw err;       
+                if (err) throw err;
             })
         })
 }
 
-
-// var server = http.createServer(function (request, response) {
-//     console.log(request.method, request.url)
-
-//     if (request.method === "GET") {
-//        readContacts(
-//            function (data) {
-//                response.end(JSON.stringify(data))
-//            }
-//     )
-
-//     } else if (request.method === "POST") {
-//         var body = '';
-//         request.on('data', function (chunk) {
-//             body += chunk.toString();
-//         })
-//         request.on('end', function(){
-//             var parseBody = JSON.parse(body)
-//             writeContacts(parseBody);
-//             response.end()
-//         })
-
-//     } else if (request.method === "PUT") {
-//         console.log('Put')
-//     } else if (request.method === "DELETE") {
-//         console.log('Delete')
-//     }
-// }).listen(5000);
-
-
-
-// let routes = [
-//     { method: 'GET', path: '/contacts', handler: getContacts },
-//     { method: 'POST', path: '/contacts', handler: postContacts },
-//     { method: 'PUT', path: '/contacts', handler: updateContact }, 
-//     { method: 'DELETE', path: '/contacts', handler: deleteContact },
-//     { method: 'GET', path: '/pika', handler: getPika },
-// ]
-
-var getContacts = function (request,response,params) {
-    console.log('get contacts')
+var getContacts = function (request, response, params) {
+    readContacts(
+        function (data) {
+            response.end(JSON.stringify(data))
+        });
 }
-var postContact = function (request,response,params) {
-    console.log('post to contacts')
+var postContact = function (request, response, params) {
+    var body = '';
+        request.on('data', function (chunk) {
+            body += chunk.toString();
+        })
+        request.on('end', function(){
+            var parseBody = JSON.parse(body)
+            writeContacts(parseBody);
+            response.end()
+        })
 }
-var updateContact = function (request,response,params) {
+var updateContact = function (request, response, params) {
     console.log('update single contact')
 }
-var deleteContact = function (request,response,params) {
+var deleteContact = function (request, response, params) {
     console.log('delete single contact')
 }
-var getContact = function (request,response,params) {
+var getContact = function (request, response, params) {
     console.log('get single contact')
 }
-var matches = function(request, method, path){    
+var matches = function (request, method, path) {
     var match = path.exec(request.url);
     return request.method === method && (match && match.slice(1));
 }
-var notFound = function(request, response) {
+var notFound = function (request, response) {
     response.statusCode = 404;
     response.end('404 error')
 }
+
+let renderIndex = function(request,response) {
+    console.log('renderIndex URL: '+request.url)
+        fs.readFile(`static/index.html`, (err,data) => {
+                    response.end(data)
+                })
+    }
+
+let renderHomepage = function(request,response) {
+    console.log('renderHomepage URL: '+request.url)
+        fs.readFile(`static/${request.url}`, (err,data) => {
+                    response.end(data)
+                })
+    }
+
 let routes = [
     { method: 'GET', path: /^\/contacts\/([0-9]+)$/, handler: getContact },
     { method: 'POST', path: /^\/contacts\/?$/, handler: postContact },
-    { method: 'PUT', path: /^\/contacts\/([0-9]+)$/, handler: updateContact }, 
+    { method: 'PUT', path: /^\/contacts\/([0-9]+)$/, handler: updateContact },
     { method: 'DELETE', path: /^\/contacts\/?$/, handler: deleteContact },
-    { method: 'GET', path: /^\/contacts\/?$/, handler: getContacts }
+    { method: 'GET', path: /^\/contacts\/?$/, handler: getContacts },
+    { method: 'GET', path: /^\/$/, handler: renderIndex },
+    { method: 'GET', path: /^\/([0-9a-zA-Z -.]+)?$/, handler: renderHomepage }
 ];
 
 let server = http.createServer((request, response) => {
-    console.log(request.method + ' ' + request.url);
-        let params = [];
-        let matchedRoute;
-            for(let route of routes) {
-                let match = matches(request, route.method, route.path);
-                console.log(match)
-                if(match){
-                    matchedRoute = route;
-                    params = match;
-                    break;
-                }
-            }
-            (matchedRoute ? matchedRoute.handler : notFound)(request,response,params)
- }).listen(5000);;
-
-var menu = (`
-=====================
-Electronic Phone Book
-=====================
-1. Look up an entry
-2. Set an entry
-3. Delete an entry
-4. List all entries
-5. Save entries
-6. Restore saved entries
-7. Quit`);
-
-var mainMenu = function () {
-    console.log(menu)
-    // console.log(phoneBook)
-
-    rl.question('What do you want to do (1-7)? ', function (answer) {
-        if (answer === '1') { //working
-            rl.question('Name: ', function (name) {
-                for (var i = 0; i < phoneBook.length; i++) {
-                    if (phoneBook[i].firstName === name) {
-                        console.log('Found entry for ' + name + ': ' + phoneBook[i].phoneNumber);
-                        mainMenu()
-                    }
-                }
-            })
+    // console.log(request.method + ' ' + request.url);
+    let params = [];
+    let matchedRoute;
+    for (let route of routes) {
+        let match = matches(request, route.method, route.path);
+        if (match) {
+            matchedRoute = route;
+            params = match;
+            break;
         }
-
-        else if (answer === '2') {
-            rl.question('Name: ', function (name) {
-                rl.question('Phone Number: ', function (phone) {
-                    // phoneBook.push({ 'firstName': name, 'phoneNumber': phone });
-                    // console.log('Entry stored for ' + name);
-                    let newContact = {'firstName': name, 'phoneNumber': phone }
-                    request.post({
-                        url: 'http://localhost/5000',
-                         body: JSON.stringify(newContact)
-                         }, function(error, response, body){
-                            console.log(body);
-                    });
-                    mainMenu()
-                });
-            })
-        }
-
-        else if (answer === '3') { //Delete an entry
-            console.log('working')
-
-        } else if (answer === '4') { //List all entries
-            for (var i = 0; i < phoneBook.length; i++) {
-                console.log('Found entry for ' + phoneBook[i].firstName + ': ' + phoneBook[i].phoneNumber)
-            }
-            mainMenu()
-        } else if (answer === '5') { //Save entries
-            fs.writeFile(pbFileName, JSON.stringify(phoneBook), function (err) {
-                if (err) throw err;
-                console.log('Entries saved to ' + pbFileName)
-                mainMenu();
-            })
-
-        } else if (answer === '6') { //Restore saved entries
-            fs.readFile(pbFileName, function (err, data) {
-                var json = JSON.parse(data);
-                phoneBook = json;
-                mainMenu();
-            })
-
-        } else if (answer === '7') { //Quit
-            console.log('Bye!')
-            rl.close();
-        }
-
-    });
-}
-
-// mainMenu();
+    }
+    (matchedRoute ? matchedRoute.handler : notFound)(request, response, params)
+}).listen(3000);;

@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>Phonebook</title>
+    <style type="text/css">
+    ul {
+      list-style: none;
+      border-style: solid;
+      max-width: 500px;
+    }
+    ul,li {
+      padding: 0;
+      margin:10px;
+    }
+    ul {
+      background-color: antiquewhite;
+    }
+
+    </style>
+  </head>
+  <body>
+    <ul class="contacts">
+    </ul>
+    <template id="contact-template">
+      <li class="contact">
+        <h1 class="contact-name"></h1>
+        <h2 class="contact-email"></h2>
+        <p class="contact-phone"></p>
+        <p class="contact-address"></p>
+        <p class="contact-id"></p>
+        <button class="contact-remove">Remove</button>
+      </li>
+    </template>
+    <script src="index.js"></script>
+  </body>
+</html>
