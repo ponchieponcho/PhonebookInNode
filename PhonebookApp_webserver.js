@@ -64,18 +64,16 @@ var notFound = function (request, response) {
     response.end('404 error')
 }
 
-// let renderContact = contact => { //templating
-//     return `<li>${contact.firstName}</li>`
-// }
-// let renderJavascript = function(request, response) {
-//     fs.readFile('static/index.js', (err,data) => {
-//         response.end(data)
-//     })
-// }
+let renderIndex = function(request,response) {
+    console.log('renderIndex URL: '+request.url)
+        fs.readFile(`static/index.html`, (err,data) => {
+                    response.end(data)
+                })
+    }
 
 let renderHomepage = function(request,response) {
-    console.log('URL: '+request.url)
-        fs.readFile(`${request.url}`, (err,data) => {
+    console.log('renderHomepage URL: '+request.url)
+        fs.readFile(`static/${request.url}`, (err,data) => {
                     response.end(data)
                 })
     }
@@ -86,7 +84,8 @@ let routes = [
     { method: 'PUT', path: /^\/contacts\/([0-9]+)$/, handler: updateContact },
     { method: 'DELETE', path: /^\/contacts\/?$/, handler: deleteContact },
     { method: 'GET', path: /^\/contacts\/?$/, handler: getContacts },
-    { method: 'GET', path: /^\/([0-9a-zA-Z -]+)?/, handler: renderHomepage }
+    { method: 'GET', path: /^\/$/, handler: renderIndex },
+    { method: 'GET', path: /^\/([0-9a-zA-Z -.]+)?$/, handler: renderHomepage }
 ];
 
 let server = http.createServer((request, response) => {
