@@ -13,18 +13,18 @@ const rl = readline.createInterface({
 });
 
 var readContacts = function (callback) {
-    fs.readFile(pbFileName, (err, data)=> {
-        var json =  JSON.parse(data);
+    fs.readFile(pbFileName, (err, data) => {
+        var json = JSON.parse(data);
         callback(json);
     })
 }
 
-var writeContacts = function (content) { 
+var writeContacts = function (content) {
     readContacts(
         function (data) {
             data.push(content)
             fs.writeFile(pbFileName, JSON.stringify(data), function (err) {
-            if (err) throw err;       
+                if (err) throw err;
             })
         })
 }
@@ -41,15 +41,7 @@ var writeContacts = function (content) {
 //     )
 
 //     } else if (request.method === "POST") {
-//         var body = '';
-//         request.on('data', function (chunk) {
-//             body += chunk.toString();
-//         })
-//         request.on('end', function(){
-//             var parseBody = JSON.parse(body)
-//             writeContacts(parseBody);
-//             response.end()
-//         })
+//         
 
 //     } else if (request.method === "PUT") {
 //         console.log('Put')
@@ -59,61 +51,63 @@ var writeContacts = function (content) {
 // }).listen(5000);
 
 
-
-// let routes = [
-//     { method: 'GET', path: '/contacts', handler: getContacts },
-//     { method: 'POST', path: '/contacts', handler: postContacts },
-//     { method: 'PUT', path: '/contacts', handler: updateContact }, 
-//     { method: 'DELETE', path: '/contacts', handler: deleteContact },
-//     { method: 'GET', path: '/pika', handler: getPika },
-// ]
-
-var getContacts = function (request,response,params) {
-    console.log('get contacts')
+var getContacts = function (request, response, params) {
+    readContacts(
+        function (data) {
+            response.end(JSON.stringify(data))
+        });
 }
-var postContact = function (request,response,params) {
-    console.log('post to contacts')
+var postContact = function (request, response, params) {
+    var body = '';
+        request.on('data', function (chunk) {
+            body += chunk.toString();
+        })
+        request.on('end', function(){
+            var parseBody = JSON.parse(body)
+            writeContacts(parseBody);
+            response.end()
+        })
 }
-var updateContact = function (request,response,params) {
+var updateContact = function (request, response, params) {
     console.log('update single contact')
 }
-var deleteContact = function (request,response,params) {
+var deleteContact = function (request, response, params) {
     console.log('delete single contact')
 }
-var getContact = function (request,response,params) {
+var getContact = function (request, response, params) {
     console.log('get single contact')
 }
-var matches = function(request, method, path){    
+var matches = function (request, method, path) {
     var match = path.exec(request.url);
     return request.method === method && (match && match.slice(1));
 }
-var notFound = function(request, response) {
+var notFound = function (request, response) {
     response.statusCode = 404;
     response.end('404 error')
 }
 let routes = [
     { method: 'GET', path: /^\/contacts\/([0-9]+)$/, handler: getContact },
     { method: 'POST', path: /^\/contacts\/?$/, handler: postContact },
-    { method: 'PUT', path: /^\/contacts\/([0-9]+)$/, handler: updateContact }, 
+    { method: 'PUT', path: /^\/contacts\/([0-9]+)$/, handler: updateContact },
     { method: 'DELETE', path: /^\/contacts\/?$/, handler: deleteContact },
     { method: 'GET', path: /^\/contacts\/?$/, handler: getContacts }
 ];
 
 let server = http.createServer((request, response) => {
     console.log(request.method + ' ' + request.url);
-        let params = [];
-        let matchedRoute;
-            for(let route of routes) {
-                let match = matches(request, route.method, route.path);
-                console.log(match)
-                if(match){
-                    matchedRoute = route;
-                    params = match;
-                    break;
-                }
-            }
-            (matchedRoute ? matchedRoute.handler : notFound)(request,response,params)
- }).listen(5000);;
+    let params = [];
+    let matchedRoute;
+    for (let route of routes) {
+        let match = matches(request, route.method, route.path);
+        console.log(match)
+        if (match) {
+            matchedRoute = route;
+            params = match;
+            break;
+        }
+    }
+    (matchedRoute ? matchedRoute.handler : notFound)(request, response, params)
+}).listen(5000);;
 
 var menu = (`
 =====================
@@ -148,12 +142,12 @@ var mainMenu = function () {
                 rl.question('Phone Number: ', function (phone) {
                     // phoneBook.push({ 'firstName': name, 'phoneNumber': phone });
                     // console.log('Entry stored for ' + name);
-                    let newContact = {'firstName': name, 'phoneNumber': phone }
+                    let newContact = { 'firstName': name, 'phoneNumber': phone }
                     request.post({
                         url: 'http://localhost/5000',
-                         body: JSON.stringify(newContact)
-                         }, function(error, response, body){
-                            console.log(body);
+                        body: JSON.stringify(newContact)
+                    }, function (error, response, body) {
+                        console.log(body);
                     });
                     mainMenu()
                 });
