@@ -4,7 +4,9 @@ let contactTemplate = document.querySelector('#contact-template').content;
 let renderContact = contact => {
   let contactRow = contactTemplate.cloneNode(true);
   Object.entries(contact).forEach(([prop, val]) => {
-    contactRow.querySelector(`.contact-${prop}`).textContent = val;
+    upperProp = prop.charAt(0).toUpperCase() + prop.slice(1);
+    contactRow.querySelector(`.contact-${prop}`).textContent = upperProp + ": ";
+    contactRow.querySelector(`.contact-${prop}`).textContent += val;
   })
 
   let root = contactRow.children[0];

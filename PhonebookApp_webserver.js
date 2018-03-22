@@ -29,22 +29,22 @@ var writeContacts = function (content) {
         })
 }
 
-var getContacts = function (request, response, params) {
+var getContacts = function (request, response) {
     readContacts(
         function (data) {
             response.end(JSON.stringify(data))
         });
 }
-var postContact = function (request, response, params) {
+var postContact = function (request, response) {
     var body = '';
-        request.on('data', function (chunk) {
-            body += chunk.toString();
-        })
-        request.on('end', function(){
-            var parseBody = JSON.parse(body)
-            writeContacts(parseBody);
-            response.end()
-        })
+    request.on('data', function (chunk) {
+        body += chunk.toString();
+    })
+    request.on('end', function () {
+        var parseBody = JSON.parse(body)
+        writeContacts(parseBody);
+        response.end()
+    })
 }
 var updateContact = function (request, response, params) {
     console.log('update single contact')
@@ -54,7 +54,18 @@ var deleteContact = function (request, response, params) {
 }
 var getContact = function (request, response, params) {
     console.log('get single contact')
+    let url = request.url.slice(10)
+    readContacts(
+        function (data) {
+            for (let contact of data) {
+                if (contact.id === url) {
+                    response.end(JSON.stringify(contact))
+                }
+
+            }
+        });
 }
+
 var matches = function (request, method, path) {
     var match = path.exec(request.url);
     return request.method === method && (match && match.slice(1));
@@ -64,19 +75,19 @@ var notFound = function (request, response) {
     response.end('404 error')
 }
 
-let renderIndex = function(request,response) {
-    console.log('renderIndex URL: '+request.url)
-        fs.readFile(`static/index.html`, (err,data) => {
-                    response.end(data)
-                })
-    }
+let renderIndex = function (request, response) {
+    console.log('renderIndex URL: ' + request.url)
+    fs.readFile(`static/index.html`, (err, data) => {
+        response.end(data)
+    })
+}
 
-let renderHomepage = function(request,response) {
-    console.log('renderHomepage URL: '+request.url)
-        fs.readFile(`static/${request.url}`, (err,data) => {
-                    response.end(data)
-                })
-    }
+let renderHomepage = function (request, response) {
+    console.log('renderHomepage URL: ' + request.url)
+    fs.readFile(`static/${request.url}`, (err, data) => {
+        response.end(data)
+    })
+}
 
 let routes = [
     { method: 'GET', path: /^\/contacts\/([0-9]+)$/, handler: getContact },
