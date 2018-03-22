@@ -29,33 +29,91 @@ var writeContacts = function (content) {
         })
 }
 
-var server = http.createServer(function (request, response) {
-    console.log(request.method, request.url)
 
-    if (request.method === "GET") {
-       readContacts(
-           function (data) {
-               response.end(JSON.stringify(data))
-           }
-    )
+// var server = http.createServer(function (request, response) {
+//     console.log(request.method, request.url)
 
-    } else if (request.method === "POST") {
-        var body = '';
-        request.on('data', function (chunk) {
-            body += chunk.toString();
-        })
-        request.on('end', function(){
-            var parseBody = JSON.parse(body)
-            writeContacts(parseBody);
-            response.end()
-        })
+//     if (request.method === "GET") {
+//        readContacts(
+//            function (data) {
+//                response.end(JSON.stringify(data))
+//            }
+//     )
 
-    } else if (request.method === "PUT") {
-        console.log('Put')
-    } else if (request.method === "DELETE") {
-        console.log('Delete')
-    }
-}).listen(5000);
+//     } else if (request.method === "POST") {
+//         var body = '';
+//         request.on('data', function (chunk) {
+//             body += chunk.toString();
+//         })
+//         request.on('end', function(){
+//             var parseBody = JSON.parse(body)
+//             writeContacts(parseBody);
+//             response.end()
+//         })
+
+//     } else if (request.method === "PUT") {
+//         console.log('Put')
+//     } else if (request.method === "DELETE") {
+//         console.log('Delete')
+//     }
+// }).listen(5000);
+
+
+
+// let routes = [
+//     { method: 'GET', path: '/contacts', handler: getContacts },
+//     { method: 'POST', path: '/contacts', handler: postContacts },
+//     { method: 'PUT', path: '/contacts', handler: updateContact }, 
+//     { method: 'DELETE', path: '/contacts', handler: deleteContact },
+//     { method: 'GET', path: '/pika', handler: getPika },
+// ]
+
+var getContacts = function (request,response,params) {
+    console.log('get contacts')
+}
+var postContact = function (request,response,params) {
+    console.log('post to contacts')
+}
+var updateContact = function (request,response,params) {
+    console.log('update single contact')
+}
+var deleteContact = function (request,response,params) {
+    console.log('delete single contact')
+}
+var getContact = function (request,response,params) {
+    console.log('get single contact')
+}
+var matches = function(request, method, path){    
+    var match = path.exec(request.url);
+    return request.method === method && (match && match.slice(1));
+}
+var notFound = function(request, response) {
+    response.statusCode = 404;
+    response.end('404 error')
+}
+let routes = [
+    { method: 'GET', path: /^\/contacts\/([0-9]+)$/, handler: getContact },
+    { method: 'POST', path: /^\/contacts\/?$/, handler: postContact },
+    { method: 'PUT', path: /^\/contacts\/([0-9]+)$/, handler: updateContact }, 
+    { method: 'DELETE', path: /^\/contacts\/?$/, handler: deleteContact },
+    { method: 'GET', path: /^\/contacts\/?$/, handler: getContacts }
+];
+
+let server = http.createServer((request, response) => {
+    console.log(request.method + ' ' + request.url);
+        let params = [];
+        let matchedRoute;
+            for(let route of routes) {
+                let match = matches(request, route.method, route.path);
+                console.log(match)
+                if(match){
+                    matchedRoute = route;
+                    params = match;
+                    break;
+                }
+            }
+            (matchedRoute ? matchedRoute.handler : notFound)(request,response,params)
+ }).listen(5000);;
 
 var menu = (`
 =====================
@@ -132,4 +190,4 @@ var mainMenu = function () {
     });
 }
 
-mainMenu();
+// mainMenu();
