@@ -1,0 +1,51 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>Phonebook</title>
+    <style type="text/css">
+    body {
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    ul {
+      
+      max-width: 500px;
+    }
+    ul,li {
+      padding: 0;
+      margin:0px;
+    }
+    li {
+      padding: 10px;
+      margin: 3px;
+      list-style: none;
+      border-style: solid;
+      background-color: antiquewhite;
+    }
+    h1,h2 {
+      margin:0px;
+    }
+
+    h2 {
+      margin-top: 10px;
+    }
+
+    </style>
+    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Mono" rel="stylesheet">
+  </head>
+  <body>
+    <ul class="contacts">
+    </ul>
+    <template id="contact-template">
+      <li class="contact">
+        <h1 class="contact-name"></h1>
+        <h2 class="contact-email"></h2>
+        <p class="contact-phone"></p>
+        <p class="contact-address"></p>
+        <p class="contact-id"></p>
+        <button class="contact-remove">Remove</button>
+      </li>
+    </template>
+    <script src="index.js"></script>
+  </body>
+</html>
